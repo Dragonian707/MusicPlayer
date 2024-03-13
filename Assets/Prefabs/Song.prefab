@@ -70,9 +70,9 @@ MonoBehaviour:
     m_Font: {fileID: 12800000, guid: 531172cfd950f984aa31e7359adfef2e, type: 3}
     m_FontSize: 50
     m_FontStyle: 0
-    m_BestFit: 0
+    m_BestFit: 1
     m_MinSize: 0
-    m_MaxSize: 100
+    m_MaxSize: 50
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -305,7 +305,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 286118264feb8da429f70e7ee6188126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clipNumber: 0
+  songTitle: {fileID: 1723488975096390444}
+  artistAndAlbum: {fileID: 6822099997488492492}
 --- !u!1 &6565602182265470626
 GameObject:
   m_ObjectHideFlags: 0
@@ -413,9 +414,9 @@ MonoBehaviour:
     m_Font: {fileID: 12800000, guid: 531172cfd950f984aa31e7359adfef2e, type: 3}
     m_FontSize: 75
     m_FontStyle: 0
-    m_BestFit: 0
+    m_BestFit: 1
     m_MinSize: 0
-    m_MaxSize: 100
+    m_MaxSize: 75
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1

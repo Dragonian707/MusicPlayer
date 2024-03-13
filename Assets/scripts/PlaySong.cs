@@ -1,12 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TagLib;
 
 public class PlaySong : MonoBehaviour
 {
-    public int clipNumber;
+    int clipNumber;
+    File IDtag;
+    [SerializeField] Text songTitle;
+    [SerializeField] Text artistAndAlbum;
     public void StartSong()
     {
         FindObjectOfType<Manager>().SetSong(clipNumber);
+    }
+
+    public void SetupButton(int clip, File tag)
+    {
+        clipNumber = clip;
+        IDtag = tag;
+
+        songTitle.text = tag.Tag.Title;
+
+        if (tag.Tag.Performers.Length > 0)
+        {
+            artistAndAlbum.text = tag.Tag.Performers[0];
+        }
+        if (tag.Tag.Album != null)
+        {
+            artistAndAlbum.text += " - ";
+            artistAndAlbum.text += tag.Tag.Album;
+        }
     }
 }
