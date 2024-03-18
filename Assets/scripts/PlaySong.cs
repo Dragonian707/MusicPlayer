@@ -7,18 +7,16 @@ using TagLib;
 public class PlaySong : MonoBehaviour
 {
     int clipNumber;
-    File IDtag;
     [SerializeField] Text songTitle;
     [SerializeField] Text artistAndAlbum;
     public void StartSong()
     {
-        FindObjectOfType<Manager>().SetSong(clipNumber);
+        FindObjectOfType<SongManager>().SetSong(clipNumber);
     }
 
     public void SetupButton(int clip, File tag)
     {
         clipNumber = clip;
-        IDtag = tag;
 
         songTitle.text = tag.Tag.Title;
 

@@ -10,44 +10,70 @@ public class Scanner : MonoBehaviour
     List<GameObject> buttons = new List<GameObject>();
     [SerializeField] GameObject prefab;
     [SerializeField] GameObject parent;
-    public Text t;
+    string path;
+    public Text debugText;
 
-    public void ScanMusic()
+    public void Scan()
     {
-        t.text = "";
+        debugText.text = "";
+#if UNITY_ANDROID && !UNITY_EDITOR
+        ScanMusicAndroid();
+#else
+        ScanMusicPC();
+#endif
+        debugText.text = "path: " + path;
+        ScanMusic();
+    }
+
+    private void ScanMusicPC()
+    {
+        path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+    }
+    private void ScanMusicAndroid()
+    {
+        path = "/storage/emulated/0/Music"; //hard coded for now, will change later
+    }
+
+    private void ScanMusic()
+    {
         for (int x = buttons.Count - 1; x >= 0; x--)
         {
             Destroy(buttons[x]);
         }
+        buttons.Clear();
 
-        string path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         string[] songs = Directory.GetFiles(path, "*.mp3", SearchOption.TopDirectoryOnly); //returns the paths to the files
-        List<TagLib.File> IDtags = new List<TagLib.File>();
+        TagLib.File file;
 
-        for (int i = 0; i < songs.Length; i++)
+        try
         {
-            t.text += songs[i];
-            t.text += "\n";
-
-            IDtags.Add(TagLib.File.Create(songs[i]));
-            
-            //clips.Add(await LoadClip(songs[i])); //don't do this, it will crash unity with too many audioclips lol
-            
-            buttons.Add(Instantiate(prefab, parent.transform));
-            
-            if (IDtags[i].Tag.IsEmpty)
+            for (int i = 0; i < songs.Length; i++)
             {
-                TagLib.Tag tag = IDtags[i].Tag;
-                tag.Title = songs[i].Split('\\')[songs[i].Split('\\').Length - 1];
+                file = TagLib.File.Create(songs[i]);
+                
+                buttons.Add(Instantiate(prefab, parent.transform));
+                
+                if (file.Tag.IsEmpty)
+                {
+                    TagLib.Tag tag = file.Tag;
+                    tag.Title = songs[i].Split('/')[^1];
+                }
+                GlobalValues.SongNames.Add(file.Tag.Title);
+                
+                buttons[i].GetComponentInChildren<PlaySong>().SetupButton(i, file);
+                file.Dispose();
             }
-            
-            buttons[i].GetComponentInChildren<PlaySong>().SetupButton(i, IDtags[i]);
         }
+        catch (Exception e)
+        {
+            debugText.text = e.ToString();
+        }
+
         Debug.Log(songs.Length);
 
-        parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, 250 * songs.Length);
+        parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, 250 * buttons.Count);
 
-        FindObjectOfType<Manager>().SetValues(songs, IDtags);
+        GlobalValues.SongPaths = songs;
+
     }
-
 }

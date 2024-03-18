@@ -10,107 +10,69 @@ using System.Threading.Tasks;
 
 public class Manager : MonoBehaviour
 {
-    [SerializeField] AudioSource source;
-    [SerializeField] GameObject currentSong; // a section at the bottom showing info on the current song
-    [SerializeField] Slider songProgress;
-    string[] clips;
-    List<TagLib.File> IDtags = new List<TagLib.File>();
-    float timer;
+    AudioSource source;
+
+    public Text debugText;
 
     private void Start()
     {
         Permission.RequestUserPermission(Permission.ExternalStorageRead);
-    }
-
-    private void Update()
-    {
-        timer += Time.deltaTime;
-        if (timer <= 0.75f) { return; }
-        if (source.clip == null) { return; }
-
-        if (source.time >= source.clip.length) 
-        {
-            Destroy(source.clip);
-            source.clip = null;
-            return;
-        }
-
-        float setVal = source.time / source.clip.length;
-        if (!SeeTooDifferent(setVal))
-        {
-            songProgress.value = setVal;
-        }
-        else
-        {
-            SetSongTime(songProgress.value);
-        }
-    }
-    bool SeeTooDifferent(float value)
-    {
-        if (value - songProgress.value >= 0.01f || songProgress.value - value >= 0.01f)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public void SetSongTime(float when)
-    {
-        source.time = when * source.clip.length;
+        source = FindObjectOfType<AudioSource>();
     }
 
     public async void SetSong(int song)
     {
-        source.clip = await LoadClip(clips[song]);
+        AudioClip s = await LoadClip(GlobalValues.SongPaths[song]);
+        if (s == null) { return; }
+        if (source.clip != null) { DestroyImmediate(source.clip, true); }
+        
+        source.clip = s;
         source.Play();
 
-        Text t = currentSong.GetComponentInChildren<Text>();
-        if (IDtags[song].Tag.Title != null)
-        {
-            t.text = IDtags[song].Tag.Title;
-        }
-        else
-        {
-            t.text = clips[song];
-        }
-        songProgress.value = 0;
     }
 
-    public void SetValues(string[] s, List<TagLib.File> t)
+    async Task<AudioClip> LoadClip(string path) //I want to add a stipulation that will download songs shorter than 8ish minutes, but streams all other songs
     {
-        clips = s;
-        IDtags = t;
-    }
-
-    async Task<AudioClip> LoadClip(string path)
-    {
-        AudioClip x = null;
-        using (UnityWebRequest rq = UnityWebRequestMultimedia.GetAudioClip(path, AudioType.MPEG))
+        try
         {
-            rq.SendWebRequest();
+            Uri uri = new Uri(path); //needs to be Uri in order to work on phone
 
-            try
+            AudioClip x = null;
+            using (UnityWebRequest rq = UnityWebRequestMultimedia.GetAudioClip(uri, AudioType.MPEG))
             {
-                while (!rq.isDone) await Task.Delay(5);
+                DownloadHandlerAudioClip handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
+                handler.streamAudio = true;
+                rq.downloadHandler = handler;
 
-                x = DownloadHandlerAudioClip.GetContent(rq);
+                try
+                {
+                    rq.SendWebRequest();
+                    while (!rq.isDone) await Task.Delay(5);
+
+                    x = DownloadHandlerAudioClip.GetContent(rq);
+                    rq.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                    debugText.text = e.ToString();
+                }
             }
-            catch (Exception e)
-            {
-                Debug.Log(e.Message);
-                //t.text = e.ToString();
-            }
+            return x;
         }
-
-        return x;
+        catch (Exception f)
+        {
+            debugText.text = f.ToString();
+        }
+        return null;
     }
     //--------------------------------------usefull things------------------------------------------------\\
     //Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments); //gets the path to where 'my documents' are *on PC
     //t.text = Directory.GetFiles("/sdcard/Download").Length.ToString(); //gets the download directory in INTERNAL storage...
     //t.text = Directory.GetFiles("/storage/emulated/0/Music", "*.mp3", SearchOption.AllDirectories).Length.ToString(); //also gets the internal storage
     //source.time = 0; //sets the song playing to the start
+    //
+    //DownloadHandlerAudioClip handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
+    //handler.streamAudio = true; //streams the audio instead of first downloading it. Saving a lot of memory, but costing quality
 
 }
