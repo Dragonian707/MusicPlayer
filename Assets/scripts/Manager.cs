@@ -19,7 +19,7 @@ public class Manager : MonoBehaviour
         Permission.RequestUserPermission(Permission.ExternalStorageRead);
         source = FindObjectOfType<AudioSource>();
     }
-
+    
     public async void SetSong(int song)
     {
         AudioClip s = await LoadClip(GlobalValues.SongPaths[song]);
@@ -29,6 +29,7 @@ public class Manager : MonoBehaviour
         source.clip = s;
         source.Play();
 
+        
     }
 
     async Task<AudioClip> LoadClip(string path) //I want to add a stipulation that will download songs shorter than 8ish minutes, but streams all other songs

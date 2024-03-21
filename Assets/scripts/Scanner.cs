@@ -52,14 +52,25 @@ public class Scanner : MonoBehaviour
                 file = TagLib.File.Create(songs[i]);
                 
                 buttons.Add(Instantiate(prefab, parent.transform));
-                
+
+#if UNITY_ANDROID && !UNITY_EDITOR
                 if (file.Tag.IsEmpty)
                 {
                     TagLib.Tag tag = file.Tag;
                     tag.Title = songs[i].Split('/')[^1];
                 }
+#else
+                if (file.Tag.IsEmpty)
+                {
+                    TagLib.Tag tag = file.Tag;
+                    tag.Title = songs[i].Split('\\')[^1];
+                    file.Save();
+                }
+#endif
+
                 GlobalValues.SongNames.Add(file.Tag.Title);
-                
+                GlobalValues.SongNumber.Add(i);
+
                 buttons[i].GetComponentInChildren<PlaySong>().SetupButton(i, file);
                 file.Dispose();
             }
@@ -71,7 +82,7 @@ public class Scanner : MonoBehaviour
 
         Debug.Log(songs.Length);
 
-        parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, 250 * buttons.Count);
+        parent.GetComponent<RectTransform>().sizeDelta = new Vector2(parent.GetComponent<RectTransform>().sizeDelta.x, 250 * buttons.Count + 5000);
 
         GlobalValues.SongPaths = songs;
 

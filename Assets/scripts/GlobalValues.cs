@@ -10,4 +10,8 @@ public class GlobalValues
 
     private static string[] songPaths;
     public static string[] SongPaths { get { return songPaths; } set { songPaths = value; } }
+
+
+    private static List<int> songNumber = new List<int>();
+    public static List<int> SongNumber { get { return songNumber; } set { songNumber = value; } }
 }

@@ -11,7 +11,7 @@ public class PlaySong : MonoBehaviour
     [SerializeField] Text artistAndAlbum;
     public void StartSong()
     {
-        FindObjectOfType<SongManager>().SetSong(clipNumber);
+        FindObjectOfType<SongManager>().SetSong(clipNumber, false);
     }
 
     public void SetupButton(int clip, File tag)

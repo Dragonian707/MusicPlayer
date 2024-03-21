@@ -10,6 +10,7 @@ public class SongManager : MonoBehaviour
     [SerializeField] private Slider songProgress;
     [SerializeField] private GameObject current;
     private int currentSong;
+    private bool shuffled = false;
 
     private void Update()
     {
@@ -22,7 +23,10 @@ public class SongManager : MonoBehaviour
             Destroy(source.clip);
             source.clip = null;
             songProgress.value = 0;
-            SetSong(currentSong + 1);
+            if (shuffled)
+            {
+                SetSong(currentSong + 1, shuffled);
+            }
             return;
         }
 
@@ -53,23 +57,40 @@ public class SongManager : MonoBehaviour
         source.time = when * source.clip.length;
     }
 
-    public void SetSong(int songNumber)
+    public void SetSong(int songNumber, bool shuffling)
     {
-        if (songNumber < 0 || songNumber >= GlobalValues.SongNames.Count) { return; }
+        if (songNumber < 0)
+        {
+            songNumber = GlobalValues.SongNames.Count - 1;
+        }
+        else if (songNumber >= GlobalValues.SongNames.Count)
+        {
+            songNumber = 0;
+        }
 
-        songProgress.value = 0;
-        FindObjectOfType<Manager>().SetSong(songNumber);
+        if (shuffling)
+        {
+            songProgress.value = 0;
+            FindObjectOfType<Manager>().SetSong(GlobalValues.SongNumber[songNumber]);
 
-        Text t = current.GetComponentInChildren<Text>();
-        t.text = GlobalValues.SongNames[songNumber];
+            Text t = current.GetComponentInChildren<Text>();
+            t.text = GlobalValues.SongNames[GlobalValues.SongNumber[songNumber]];
+        }
+        else
+        {
+            songProgress.value = 0;
+            FindObjectOfType<Manager>().SetSong(songNumber);
 
+            Text t = current.GetComponentInChildren<Text>();
+            t.text = GlobalValues.SongNames[songNumber];
+        }
         currentSong = songNumber;
     }
     //button methods
     public void PreviousSong()
     {
         currentSong--;
-        SetSong(currentSong);
+        SetSong(currentSong, shuffled);
     }
     public void PauseUnpauseSong()
     {
@@ -85,6 +106,22 @@ public class SongManager : MonoBehaviour
     public void NextSong()
     {
         currentSong++;
-        SetSong(currentSong);
+        SetSong(currentSong, shuffled);
+    }
+    public void shuffle()
+    {
+        GlobalValues.SongNumber.Clear();
+
+        int t = 999;
+        while (GlobalValues.SongNumber.Count != GlobalValues.SongNames.Count)
+        {
+            t = Random.Range(0, GlobalValues.SongNames.Count);
+            if (!GlobalValues.SongNumber.Contains(t))
+            {
+                GlobalValues.SongNumber.Add(t);
+            }
+        }
+        shuffled = true;
+        SetSong(0, shuffled);
     }
 }
