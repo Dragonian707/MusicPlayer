@@ -22,17 +22,17 @@ public class Manager : MonoBehaviour
     
     public async void SetSong(int song)
     {
+        if (source.clip != null) { DestroyImmediate(source.clip, true); }
+        
+        //waits for the correct song to be retrieved and downloaded before putting it in the audiosource
         AudioClip s = await LoadClip(GlobalValues.SongPaths[song]);
         if (s == null) { return; }
-        if (source.clip != null) { DestroyImmediate(source.clip, true); }
         
         source.clip = s;
         source.Play();
-
-        
     }
 
-    async Task<AudioClip> LoadClip(string path) //I want to add a stipulation that will download songs shorter than 8ish minutes, but streams all other songs
+    async Task<AudioClip> LoadClip(string path)
     {
         try
         {
@@ -41,6 +41,7 @@ public class Manager : MonoBehaviour
             AudioClip x = null;
             using (UnityWebRequest rq = UnityWebRequestMultimedia.GetAudioClip(uri, AudioType.MPEG))
             {
+                //create a handler to make the song not download, but streaming it instead making it take way less memory
                 DownloadHandlerAudioClip handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
                 handler.streamAudio = true;
                 rq.downloadHandler = handler;
@@ -60,6 +61,27 @@ public class Manager : MonoBehaviour
                 }
             }
             return x;
+            //if (x.length > 330) { return x; }
+
+            /*using (UnityWebRequest rq2 = UnityWebRequestMultimedia.GetAudioClip(uri, AudioType.MPEG))
+            { 
+                Debug.Log("downloading actual song");
+                try
+                {
+                    rq2.SendWebRequest();
+                    while (!rq2.isDone) await Task.Delay(5);
+                
+                    x = DownloadHandlerAudioClip.GetContent(rq2);
+                    rq2.Dispose();
+                    Debug.Log("Completed");
+                }
+                catch (Exception e2)
+                {
+                    Debug.Log(e2.Message);
+                    debugText.text = e2.ToString();
+                }
+            }
+            return x;*/
         }
         catch (Exception f)
         {
@@ -67,6 +89,7 @@ public class Manager : MonoBehaviour
         }
         return null;
     }
+
     //--------------------------------------usefull things------------------------------------------------\\
     //Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments); //gets the path to where 'my documents' are *on PC
     //t.text = Directory.GetFiles("/sdcard/Download").Length.ToString(); //gets the download directory in INTERNAL storage...

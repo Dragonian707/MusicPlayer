@@ -18,6 +18,7 @@ public class SongManager : MonoBehaviour
         if (timer <= 0.75f) { return; }
         if (source.clip == null) { return; }
 
+        //if the song is over, destroy the song
         if (source.time >= source.clip.length)
         {
             Destroy(source.clip);
@@ -30,6 +31,7 @@ public class SongManager : MonoBehaviour
             return;
         }
 
+        //set the slider at the bottom to the value of where in the song you are and allow the user to change where inthe song they are
         float setVal = source.time / source.clip.length;
         if (!SeeTooDifferent(setVal))
         {
@@ -42,7 +44,8 @@ public class SongManager : MonoBehaviour
     }
     bool SeeTooDifferent(float value)
     {
-        if (value - songProgress.value >= 0.01f || songProgress.value - value >= 0.01f)
+        //check if the slider has been touched by the user to skip forward in the song
+        if (value - songProgress.value >= 0.005f || songProgress.value - value >= 0.005f)
         {
             return true;
         }
@@ -54,11 +57,13 @@ public class SongManager : MonoBehaviour
 
     public void SetSongTime(float when)
     {
+        //set the song to the specified value
         source.time = when * source.clip.length;
     }
 
     public void SetSong(int songNumber, bool shuffling)
     {
+        //make sure the songnumber that was given is in range
         if (songNumber < 0)
         {
             songNumber = GlobalValues.SongNames.Count - 1;
@@ -68,25 +73,26 @@ public class SongManager : MonoBehaviour
             songNumber = 0;
         }
 
+        //if you're shuffling the songs use the (random) songnumbers from GlobalValues
         if (shuffling)
         {
+            FindObjectOfType<Manager>().SetSong(GlobalValues.SongNumbers[songNumber]);
             songProgress.value = 0;
-            FindObjectOfType<Manager>().SetSong(GlobalValues.SongNumber[songNumber]);
 
             Text t = current.GetComponentInChildren<Text>();
-            t.text = GlobalValues.SongNames[GlobalValues.SongNumber[songNumber]];
+            t.text = GlobalValues.SongNames[GlobalValues.SongNumbers[songNumber]];
         }
         else
         {
-            songProgress.value = 0;
             FindObjectOfType<Manager>().SetSong(songNumber);
+            songProgress.value = 0;
 
             Text t = current.GetComponentInChildren<Text>();
             t.text = GlobalValues.SongNames[songNumber];
         }
         currentSong = songNumber;
     }
-    //button methods
+    //button methods for the next and previous song, pausing and unpausing songs and to shuffle
     public void PreviousSong()
     {
         currentSong--;
@@ -108,17 +114,17 @@ public class SongManager : MonoBehaviour
         currentSong++;
         SetSong(currentSong, shuffled);
     }
-    public void shuffle()
+    public void Shuffle()
     {
-        GlobalValues.SongNumber.Clear();
+        GlobalValues.SongNumbers.Clear();
 
         int t = 999;
-        while (GlobalValues.SongNumber.Count != GlobalValues.SongNames.Count)
+        while (GlobalValues.SongNumbers.Count != GlobalValues.SongNames.Count)
         {
             t = Random.Range(0, GlobalValues.SongNames.Count);
-            if (!GlobalValues.SongNumber.Contains(t))
+            if (!GlobalValues.SongNumbers.Contains(t))
             {
-                GlobalValues.SongNumber.Add(t);
+                GlobalValues.SongNumbers.Add(t);
             }
         }
         shuffled = true;

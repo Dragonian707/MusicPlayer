@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TagLib;
 
+//script put on all buttons in order for them to work
 public class PlaySong : MonoBehaviour
 {
     int clipNumber;
@@ -14,6 +15,7 @@ public class PlaySong : MonoBehaviour
         FindObjectOfType<SongManager>().SetSong(clipNumber, false);
     }
 
+    //sets up the button with its text and which number corresponds to the song to play
     public void SetupButton(int clip, File tag)
     {
         clipNumber = clip;

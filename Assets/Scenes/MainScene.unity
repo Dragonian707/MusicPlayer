@@ -708,7 +708,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 283901685}
         m_TargetAssemblyTypeName: SongManager, Assembly-CSharp
-        m_MethodName: shuffle
+        m_MethodName: Shuffle
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
